@@ -1,0 +1,572 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>AutoFlix</title>
+  <!-- Use a Google Font similar to Netflix -->
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&display=swap" rel="stylesheet">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    /* Global Styles */
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Roboto', sans-serif;
+      background-color: #141414;
+      color: #fff;
+      line-height: 1.6;
+    }
+    a { color: #e50914; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    button {
+      border: none; 
+      outline: none; 
+      cursor: pointer;
+      background: #e50914;
+      color: #fff;
+      padding: 10px 20px; 
+      font-size: 1rem;
+      border-radius: 4px; 
+      transition: background 0.3s;
+    }
+    button:hover { background: #f40612; }
+
+    /* Header & Navigation */
+    header { 
+      background: #141414; 
+      padding: 20px; 
+      text-align: center; 
+      border-bottom: 1px solid #333; 
+    }
+    header h1 { 
+      font-size: 2.5rem; 
+      letter-spacing: 2px; 
+      cursor: pointer;
+    }
+    nav {
+      background: #141414; 
+      padding: 15px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 20px;
+      border-bottom: 1px solid #333;
+    }
+    /* Only Search button remains in navbar; no hover change */
+    nav button {
+      background: transparent;
+      border: none;
+      color: #fff;
+      font-size: 1.1rem;
+      padding: 8px 15px;
+      transition: none;
+    }
+    
+    /* Search Toggle placed in navbar, inline */
+    #searchToggle {
+      display: none;
+      margin-left: 2px;
+      text-align: center;
+    }
+    #searchToggle input {
+      padding: 12px 45px 12px 20px;
+      border: 1px solid #444;
+      border-radius: 10px;
+      background: #222;
+      color: #fff;
+      font-size: 1rem;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+    }
+    #searchToggle i {
+      margin-left: -35px;
+      cursor: pointer;
+      color: #e50914;
+    }
+    
+    /* Views */
+    .view {
+      display: none;
+      padding: 5px 20px 10px 20px;
+      max-width: 1200px;
+      margin: 0 auto;
+      animation: fadeIn 0.5s;
+    }
+    .active { display: block; }
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+    /* Homepage Image Container (only visible on homepage) */
+    #homeImageContainer {
+      padding: 30px;
+      text-align: center;
+      max-width: 75%;
+      margin: 0 auto;
+    }
+    #homeImageContainer img {
+      width: 100%;
+      height: auto;
+      display: block;
+    }
+
+    /* Movie Grid Styles (used in search results) */
+    .movie-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+      gap: 20px;
+      margin-top: 20px;
+    }
+    .movie-item {
+      background: #222;
+      padding: 10px;
+      border-radius: 4px;
+      transition: transform 0.3s, box-shadow 0.3s;
+      cursor: pointer;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.5);
+    }
+    .movie-item:hover {
+      transform: scale(1.05);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.8);
+    }
+    .movie-item img { width: 100%; border-radius: 4px; }
+    .movie-item p { margin-top: 10px; font-size: 0.9rem; text-align: center; }
+    /* Append release year below title in cards */
+    .movie-year {
+      font-size: 0.8rem;
+      color: #aaa;
+      text-align: center;
+      margin-top: 5px;
+    }
+
+    /* Section Headings */
+    .section-title {
+      font-size: 1.8rem;
+      margin-bottom: 10px;
+      padding-left: 5px;
+      padding-top: 8px;
+    }
+
+    /* Detail View */
+    #detailView {
+      max-width: 900px;
+      padding: 40px 20px;
+      margin: 0 auto;
+    }
+    #detailView img {
+      width: 100%;
+      max-width: 300px;
+      border-radius: 4px;
+      margin: 0 auto 20px;
+      display: block;
+    }
+    #detailInfo { text-align: center; }
+    #detailInfo h2 { margin-bottom: 10px; font-size: 2rem; }
+    #detailInfo p { margin-bottom: 10px; font-size: 1rem; }
+    /* Action buttons container now uses flex with 20px gap */
+    #actionButtons {
+      display: flex;
+      gap: 20px;
+      justify-content: center;
+      margin: 20px 0;
+    }
+    
+    /* Episodes Section */
+    #episodesSection { margin-top: 30px; }
+    #episodesSection select {
+      width: 100%;
+      max-width: 200px;
+      padding: 10px;
+      margin-bottom: 15px;
+      background: #222;
+      color: #fff;
+      border: 1px solid #444;
+      border-radius: 4px;
+    }
+    #episodesSection ul { list-style: none; }
+    #episodesSection ul li {
+      padding: 12px;
+      background: #222;
+      margin-bottom: 10px;
+      border-radius: 4px;
+      transition: background 0.3s;
+      cursor: pointer;
+    }
+    #episodesSection ul li:hover { background: #333; }
+
+    /* Embed Viewer */
+    #embedViewerView { position: relative; }
+    /* Embed header styled to match the iframe width */
+    #embedHeader {
+      padding: 10px;
+      text-align: center;
+      background: #222;
+      font-size: 1.2rem;
+      display: none;
+      width: 100%;
+    }
+    #embedFrame {
+      width: 100%;
+      height: calc(100vh - 140px);
+      border: none;
+    }
+
+    /* Pagination Styles */
+    .pagination {
+      display: flex;
+      justify-content: center;
+      margin-top: 30px;
+      gap: 15px;
+    }
+    .pagination button { padding: 10px 15px; font-size: 1rem; }
+
+    /* Responsive adjustments */
+    @media (max-width: 600px) {
+      header h1 { font-size: 2rem; }
+      nav { flex-direction: column; }
+      nav button { font-size: 1rem; margin-bottom: 10px; }
+      #searchToggle { margin: 10px auto; }
+      .view { padding: 20px 10px; }
+      #detailView img { max-width: 100%; }
+    }
+    
+    /* Updated .episode-options for TV series with 20px gap */
+    .episode-options {
+      margin-top: 10px;
+      text-align: center;
+      display: flex;
+      gap: 20px;
+      justify-content: center;
+    }
+    
+    /* Back button on embed viewer positioned 25px below the iframe */
+    #embedViewerView button {
+      margin-top: 15px;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <!-- Logo now clickable to return to homepage -->
+    <h1 onclick="switchView('homeView');">AutoFlix</h1>
+  </header>
+  <nav>
+    <!-- Only search remains -->
+    <button id="searchButton" onclick="toggleSearch()">Search</button>
+    <!-- Search input placed inline in nav, centered -->
+    <div id="searchToggle">
+      <input type="text" id="searchInput" placeholder="Enter movie name" onkeypress="if(event.key==='Enter'){ performSearch(1); }">
+      <i class="fas fa-search" onclick="performSearch(1)"></i>
+    </div>
+  </nav>
+  <!-- Home View - Clean Homepage with only Logo, Search Box, and Homepage Image -->
+  <div id="homeView" class="view active">
+    <div id="homeImageContainer">
+      <img src="https://i.ibb.co/Pz02gXv6/Free-TV-Show-Sites.jpg" alt="Free-TV-Show-Sites" border="0">
+    </div>
+  </div>
+
+  <!-- Search Results View -->
+  <div id="searchView" class="view">
+    <button onclick="switchView('homeView');">Back</button>
+    <h2 class="section-title" id="searchHeader">Search Results</h2>
+    <div id="searchResults" class="movie-grid"></div>
+    <div class="pagination">
+      <button id="prevPage" onclick="changeSearchPage(-1)">Previous</button>
+      <button id="nextPage" onclick="changeSearchPage(1)">Next</button>
+    </div>
+  </div>
+
+  <!-- Detail View -->
+  <div id="detailView" class="view">
+    <button onclick="switchView('homeView');">Back</button>
+    <!-- Poster at the top -->
+    <img id="detailPoster" src="" alt="Poster">
+    <!-- Details below the poster -->
+    <div id="detailInfo">
+      <h2 id="detailTitle"></h2>
+      <p><span style="font-weight: 800;">Genre : </span><span id="detailGenre"></span></p>
+      <p><span style="font-weight: 800;">Year : </span><span id="detailYear"></span></p>
+      <p><span style="font-weight: 800;">Country : </span><span id="detailCountry"></span></p>
+      <p><span style="font-weight: 800;">Actors : </span><span id="detailActors"></span></p>
+
+      <p><span style="font-weight: 800;">Synopsis : </span><span id="detailPlot"></span></p>
+      <!-- Clickable IMDB rating -->
+      <p id="detailRating"></p>
+    </div>
+    <!-- Action buttons for movies (if not a TV series) -->
+    <div id="actionButtons"></div>
+    <!-- Episodes Section for TV Series -->
+    <div id="episodesSection" style="display:none;">
+      <label for="seasonSelect">Select Season : &nbsp;</label>
+      <select id="seasonSelect" onchange="seasonChanged()"></select>
+      <ul id="episodesList"></ul>
+    </div>
+  </div>
+
+  <!-- Embed Viewer View -->
+  <div id="embedViewerView" class="view">
+    <!-- Embed header displayed above the iframe -->
+    <div id="embedHeader"></div>
+    <!-- Embed iframe comes next -->
+    <iframe id="embedFrame"></iframe>
+    <!-- Back button placed below the iframe -->
+    <button onclick="closeEmbedViewer()">Back</button>
+  </div>
+
+  <!-- Include Font Awesome for search icon -->
+  <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
+  <script>
+    const API_KEY = "45e48b11";
+    const API_URL = "https://www.omdbapi.com/?apikey=" + API_KEY;
+    let currentMovieData = {};
+    let currentEmbedURL = "";
+    // For search pagination
+    let currentSearchKeyword = "";
+    let currentSearchPage = 1;
+    let totalSearchResults = 0;
+    // Global variable to track the currently open episode options container
+    let currentOpenOptions = null;
+    // Global variables for current TV series episode details
+    let currentTvSeason = "";
+    let currentTvEpisode = "";
+
+    function toggleSearch() {
+      const searchDiv = document.getElementById("searchToggle");
+      if(searchDiv.style.display === "block") {
+        searchDiv.style.display = "none";
+      } else {
+        searchDiv.style.display = "inline-block";
+        document.getElementById("searchInput").focus();
+      }
+    }
+
+    function performSearch(page) {
+      const query = document.getElementById("searchInput").value.trim();
+      if(query === "") return;
+      currentSearchKeyword = query;
+      currentSearchPage = page;
+      searchMovies(query, page);
+    }
+
+    function searchMovies(query, page) {
+      const resultsDiv = document.getElementById("searchResults");
+      resultsDiv.innerHTML = "<p>Searching...</p>";
+      fetch(API_URL + "&s=" + encodeURIComponent(query) + "&page=" + page)
+        .then(response => response.json())
+        .then(data => {
+          resultsDiv.innerHTML = "";
+          document.getElementById("searchHeader").textContent = "Search Results for \"" + currentSearchKeyword + "\"";
+          if(data.Response === "True") {
+            totalSearchResults = parseInt(data.totalResults);
+            data.Search.forEach(movie => {
+              let div = document.createElement("div");
+              div.className = "movie-item";
+              div.onclick = () => { showMovieDetails(movie.imdbID); };
+              if(movie.Poster && movie.Poster !== "N/A"){
+                let img = document.createElement("img");
+                img.src = movie.Poster;
+                img.alt = movie.Title;
+                div.appendChild(img);
+              }
+              let title = document.createElement("p");
+              title.textContent = movie.Title;
+              div.appendChild(title);
+              let yearInfo = document.createElement("p");
+              yearInfo.className = "movie-year";
+              yearInfo.textContent = "Year: " + movie.Year;
+              div.appendChild(yearInfo);
+              resultsDiv.appendChild(div);
+            });
+          } else {
+            resultsDiv.innerHTML = "<p>No results found.</p>";
+          }
+          updateSearchPagination();
+          switchView("searchView");
+        })
+        .catch(error => { console.error(error); resultsDiv.innerHTML = "<p>Error searching movies.</p>"; });
+    }
+
+    function updateSearchPagination() {
+      const prevBtn = document.getElementById("prevPage");
+      const nextBtn = document.getElementById("nextPage");
+      prevBtn.disabled = currentSearchPage <= 1;
+      nextBtn.disabled = currentSearchPage * 10 >= totalSearchResults;
+    }
+
+    function changeSearchPage(change) {
+      currentSearchPage += change;
+      searchMovies(currentSearchKeyword, currentSearchPage);
+    }
+
+    function showMovieDetails(imdbID) {
+      fetch(API_URL + "&i=" + imdbID + "&plot=full")
+        .then(response => response.json())
+        .then(data => {
+          currentMovieData = data;
+          document.getElementById("detailTitle").textContent = data.Title;
+          document.getElementById("detailYear").textContent = data.Year;
+          document.getElementById("detailPlot").textContent = data.Plot;
+          document.getElementById("detailGenre").textContent = data.Genre;
+          document.getElementById("detailCountry").textContent = data.Country;
+          document.getElementById("detailActors").textContent = data.Actors;
+          document.getElementById("detailRating").innerHTML = `<a href="https://www.imdb.com/title/${data.imdbID}" target="_blank">IMDB Rating: ${data.imdbRating}</a>`;
+          document.getElementById("detailPoster").src = (data.Poster && data.Poster !== "N/A") ? data.Poster : "";
+          document.getElementById("actionButtons").innerHTML = "";
+          if(data.Type.toLowerCase() === "series" && data.totalSeasons) {
+            document.getElementById("episodesSection").style.display = "block";
+            let seasonSelect = document.getElementById("seasonSelect");
+            seasonSelect.innerHTML = "";
+            for(let i = 1; i <= Number(data.totalSeasons); i++){
+              let option = document.createElement("option");
+              option.value = i;
+              option.textContent = "Season " + i;
+              seasonSelect.appendChild(option);
+            }
+            loadEpisodes(data.imdbID, 1);
+          } else {
+            document.getElementById("episodesSection").style.display = "none";
+            // For movies, add two side-by-side buttons with a 20px gap.
+            let btnEmbed = document.createElement("button");
+            btnEmbed.textContent = "Watch on embed.su";
+            btnEmbed.onclick = () => { watchMovieEmbed(data.imdbID); };
+            let btnVidsrc = document.createElement("button");
+            btnVidsrc.textContent = "Watch on vidsrc";
+            btnVidsrc.onclick = () => { watchMovieVidsrc(data.imdbID); };
+            document.getElementById("actionButtons").appendChild(btnEmbed);
+            document.getElementById("actionButtons").appendChild(btnVidsrc);
+          }
+          if(currentOpenOptions){
+            currentOpenOptions.remove();
+            currentOpenOptions = null;
+          }
+          switchView("detailView");
+        })
+        .catch(error => { console.error(error); });
+    }
+
+    function loadEpisodes(imdbID, season) {
+      fetch(API_URL + "&i=" + imdbID + "&Season=" + season)
+        .then(response => response.json())
+        .then(data => {
+          const episodesList = document.getElementById("episodesList");
+          episodesList.innerHTML = "";
+          if(data.Response === "True" && data.Episodes) {
+            data.Episodes.forEach(ep => {
+              let li = document.createElement("li");
+              li.textContent = `Episode ${ep.Episode} - ${ep.Title}`;
+              li.onclick = function(e) {
+                e.stopPropagation();
+                showEpisodeOptions(this, imdbID, season, ep.Episode);
+              };
+              episodesList.appendChild(li);
+            });
+          } else {
+            episodesList.innerHTML = "<li>No episodes found</li>";
+          }
+        })
+        .catch(error => { console.error(error); });
+    }
+
+    function seasonChanged() {
+      const season = document.getElementById("seasonSelect").value;
+      loadEpisodes(currentMovieData.imdbID, season);
+    }
+
+    function showEpisodeOptions(li, imdbID, season, episode) {
+      if(currentOpenOptions && currentOpenOptions.parentElement !== li) {
+        currentOpenOptions.remove();
+        currentOpenOptions = null;
+      }
+      let optionsDiv = li.querySelector(".episode-options");
+      if(optionsDiv) {
+        optionsDiv.remove();
+        currentOpenOptions = null;
+        return;
+      } else {
+        optionsDiv = document.createElement("div");
+        optionsDiv.className = "episode-options";
+        let btnEmbed = document.createElement("button");
+        btnEmbed.textContent = "Watch on embed.su";
+        btnEmbed.onclick = function(e) {
+          e.stopPropagation();
+          currentTvSeason = season;
+          currentTvEpisode = episode;
+          watchEpisodeEmbedTV(imdbID, season, episode);
+        };
+        let btnVidsrc = document.createElement("button");
+        btnVidsrc.textContent = "Watch on vidsrc";
+        btnVidsrc.onclick = function(e) {
+          e.stopPropagation();
+          currentTvSeason = season;
+          currentTvEpisode = episode;
+          currentEmbedURL = "https://vidsrc.cc/v2/embed/tv/" + imdbID + "/" + season + "/" + episode + "?autoPlay=false&quality=360p";
+          updateEmbedHeader();
+          showEmbedViewer();
+        };
+        optionsDiv.appendChild(btnEmbed);
+        optionsDiv.appendChild(btnVidsrc);
+        li.appendChild(optionsDiv);
+        currentOpenOptions = optionsDiv;
+      }
+    }
+
+    // For TV series episodes via embed.su.
+    function watchEpisodeEmbedTV(imdbID, season, episode) {
+      currentEmbedURL = "https://embed.su/embed/tv/" + imdbID + "/" + season + "/" + episode;
+      updateEmbedHeader();
+      showEmbedViewer();
+    }
+
+    // For movies via embed.su.
+    function watchMovieEmbed(imdbID) {
+      currentEmbedURL = "https://embed.su/embed/movie/" + imdbID;
+      updateEmbedHeader();
+      showEmbedViewer();
+    }
+
+    // For movies via vidsrc.
+    function watchMovieVidsrc(imdbID) {
+      currentEmbedURL = "https://vidsrc.cc/v2/embed/movie/" + imdbID + "?autoPlay=false&quality=360p";
+      updateEmbedHeader();
+      showEmbedViewer();
+    }
+
+    // Update the embed header for both movies and TV series.
+    function updateEmbedHeader() {
+      const header = document.getElementById("embedHeader");
+      if(currentMovieData && currentMovieData.Title) {
+        if(currentMovieData.Type.toLowerCase() === "series") {
+          header.innerText = "NOW WATCHING - " + currentMovieData.Title + " - Season " + currentTvSeason + " Episode " + currentTvEpisode + "";
+        } else {
+          header.innerText = "NOW WATCHING - " + currentMovieData.Title + "";
+        }
+        header.style.display = "block";
+      } else {
+        header.style.display = "none";
+      }
+    }
+
+    function showEmbedViewer() {
+      document.getElementById("embedFrame").src = currentEmbedURL;
+      switchView("embedViewerView");
+    }
+
+    function switchView(viewId) {
+      if(viewId !== "embedViewerView") {
+        document.getElementById("embedFrame").src = "";
+        document.getElementById("embedHeader").style.display = "none";
+      }
+      const views = document.getElementsByClassName("view");
+      for(let view of views) { view.classList.remove("active"); }
+      document.getElementById(viewId).classList.add("active");
+      if(viewId !== "detailView" && currentOpenOptions) {
+        currentOpenOptions.remove();
+        currentOpenOptions = null;
+      }
+    }
+
+    function closeEmbedViewer() {
+      document.getElementById("embedFrame").src = "";
+      document.getElementById("embedHeader").style.display = "none";
+      switchView("detailView");
+    }
+  </script>
+</body>
+</html>
